@@ -14,8 +14,6 @@ Customized and maintained by **Engr. Prothes** (psbmlabs).
 - `/s/<id><hash>/<filename>` inline stream (VLC / MX Player / `<video src>`)
 - `/<id><hash>/<filename>` download
 
-## Credits & license
-Based on [GouthamSER/TG-FileStreamBot](https://github.com/GouthamSER/TG-FileStreamBot)
-(which builds on EverythingSuckz/TG-FileStreamBot and eyaadh/megadlbot_oss).
+## license
 Licensed under the GNU AGPL-3.0, see `LICENSE`. Original copyright notices are retained as the license requires.
 Modifications by Engr. Prothes.
