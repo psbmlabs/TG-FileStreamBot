@@ -236,6 +236,8 @@ def _if_range_ok(request: web.Request, etag: str) -> bool:
 
 
 async def media_streamer(request: web.Request, message_id: int, secure_hash: str, url_file_name: str = None, inline: bool = False):
+    if not work_loads:
+        raise web.HTTPServiceUnavailable(text="Bot is still connecting to Telegram, please retry in a minute.")
     index = min(work_loads, key=work_loads.get)
     faster_client = multi_clients[index]
     
