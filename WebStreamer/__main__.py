@@ -8,6 +8,7 @@ import logging
 from .vars import Var
 from aiohttp import web
 from pyrogram import idle
+from pyrogram.errors import FloodWait
 from WebStreamer import utils
 from WebStreamer import StreamBot
 from WebStreamer.server import web_server
@@ -37,8 +38,24 @@ except RuntimeError:  # Python 3.12+/3.14: no implicit loop
 
 
 async def start_services():
+    # Web server আগে চালু করা হলো যাতে Render port খুঁজে পায়
+    await server.setup()
+    await web.TCPSite(server, Var.BIND_ADDRESS, Var.PORT).start()
+    logging.info("Web server started on port {}".format(Var.PORT))
+
     logging.info("Initializing Telegram Bot")
-    await StreamBot.start()
+    for attempt in range(5):
+        try:
+            await StreamBot.start()
+            break
+        except FloodWait as e:
+            logging.warning(f"FloodWait: {e.value}s")
+            await asyncio.sleep(e.value + 5)
+        except Exception as e:
+            logging.error(f"Start failed ({attempt+1}/5): {e}")
+            await asyncio.sleep(30)
+    else:
+        raise SystemExit("Telegram auth failed")
     bot_info = await StreamBot.get_me()
     logging.debug(bot_info)
     StreamBot.username = bot_info.username
@@ -46,8 +63,6 @@ async def start_services():
     await initialize_clients()
     if Var.KEEP_ALIVE:
         asyncio.create_task(utils.ping_server())
-    await server.setup()
-    await web.TCPSite(server, Var.BIND_ADDRESS, Var.PORT).start()
     logging.info("Service Started")
     logging.info("bot =>> {}".format(bot_info.first_name))
     if bot_info.dc_id:
